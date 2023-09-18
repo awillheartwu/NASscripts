@@ -59,11 +59,9 @@ async function createZipFile(imageFiles, folderPath, folderName) {
 // 递归处理文件夹及其内容
 async function processFolderRecursively(folderPath) {
   const folderName = path.basename(folderPath);
-  console.log('♿️ - file: zip.mjs:49 - processFolderRecursively - folderName:', folderName);
 
   // 读取文件夹中的文件和子文件夹
   const files = await readdir(folderPath);
-  console.log('♿️ - file: zip.mjs:53 - processFolderRecursively - files:', files);
   const imageFiles = [];
 
   // 遍历文件和子文件夹
@@ -80,10 +78,7 @@ async function processFolderRecursively(folderPath) {
   }
 
   // 如果有图片文件且文件夹不包含压缩包文件，创建压缩文件
-  console.log('imageFiles.length:', imageFiles.length);
-  console.log('await containsZipFiles(folderPath):', await containsZipFiles(folderPath));
   if (imageFiles.length > 0 && !await containsZipFiles(folderPath)) {
-    console.log('createZipFile');
     await createZipFile(imageFiles, folderPath, folderName);
   }
 }
@@ -91,7 +86,6 @@ async function processFolderRecursively(folderPath) {
 // 主函数
 async function main() {
   const inputFolder = process.argv[2];
-  console.log('♿️ - file: zip.mjs:76 - main - inputFolder:', inputFolder);
 
   if (!inputFolder) {
     console.error('Usage: node script.mjs <input_folder>');
