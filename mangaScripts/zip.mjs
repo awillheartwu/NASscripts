@@ -13,19 +13,6 @@ async function isImageFile(filePath) {
   return imageExtensions.includes(extname);
 }
 
-// 检查文件夹是否包含压缩包文件
-async function containsZipFiles(folderPath) {
-  const files = await readdir(folderPath);
-  for (const file of files) {
-    const filePath = path.join(folderPath, file);
-    const fileStat = await stat(filePath);
-    if (fileStat.isFile() && file.endsWith('.zip')) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // 创建压缩文件
 async function createZipFile(imageFiles, folderPath, folderName) {
   try {
@@ -55,7 +42,6 @@ async function createZipFile(imageFiles, folderPath, folderName) {
   }
 }
 
-
 // 递归处理文件夹及其内容
 async function processFolderRecursively(folderPath) {
   const folderName = path.basename(folderPath);
@@ -73,13 +59,21 @@ async function processFolderRecursively(folderPath) {
       imageFiles.push(filePath);
     } else if (fileStat.isDirectory()) {
       // 如果是文件夹，递归处理该文件夹
-      await processFolderRecursively(filePath); // 将递归调用移到这里
+      await processFolderRecursively(filePath);
     }
   }
 
-  // 如果有图片文件且文件夹不包含压缩包文件，创建压缩文件
-  if (imageFiles.length > 0 && !await containsZipFiles(folderPath)) {
-    await createZipFile(imageFiles, folderPath, folderName);
+  // 判断是否需要创建 zip
+  if (imageFiles.length > 0) {
+    // 检查上一层目录是否已经有 zip 文件
+    const parentFolder = path.dirname(folderPath);
+    const parentFolderName = path.basename(parentFolder);
+    const parentZipExists = fs.existsSync(path.join(parentFolder, `${parentFolderName}.zip`));
+
+    if (!parentZipExists) {
+      // 如果上一层没有对应的 zip 文件，创建到上层目录下
+      await createZipFile(imageFiles, parentFolder, folderName);
+    }
   }
 }
 
