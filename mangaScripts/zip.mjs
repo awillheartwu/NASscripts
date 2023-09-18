@@ -42,10 +42,11 @@ async function createZipFile(imageFiles, folderPath, folderName) {
       archive.file(imageFile, { name: imageName });
     }
 
-    await archive.finalize();
+    const a = await archive.finalize();
+    console.log('♿️ - file: zip.mjs:46 - createZipFile - a:', a);
     console.log(`Created ${folderName}.zip in ${folderPath}`);
-  } catch (err) { 
-    console.log(err) 
+  } catch (err) {
+    console.log(err)
   }
 }
 
