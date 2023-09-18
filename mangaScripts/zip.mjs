@@ -32,16 +32,15 @@ async function createZipFile(imageFiles, folderPath, folderName) {
     const outputZipPath = path.join(folderPath, `${folderName}.zip`);
     const output = fs.createWriteStream(outputZipPath);
     const archive = archiver('zip', { zlib: { level: 9 } });
-    console.log('♿️ - file: zip.mjs:35 - createZipFile - archive:', archive);
 
     archive.pipe(output);
-    console.log('♿️ - file: zip.mjs:38 - createZipFile - archive:', archive);
 
     for (const imageFile of imageFiles) {
       const imageName = path.basename(imageFile);
-      archive.file(imageFile, { name: imageName });
+      const a = archive.file(imageFile, { name: imageName });
+      console.log('♿️ - file: zip.mjs:41 - createZipFile - a:', a);
     }
-
+    console.log('start finalize');
     const a = await archive.finalize();
     console.log('♿️ - file: zip.mjs:46 - createZipFile - a:', a);
     console.log(`Created ${folderName}.zip in ${folderPath}`);
