@@ -28,19 +28,25 @@ async function containsZipFiles(folderPath) {
 
 // 创建压缩文件
 async function createZipFile(imageFiles, folderPath, folderName) {
-  const outputZipPath = path.join(folderPath, `${folderName}.zip`);
-  const output = fs.createWriteStream(outputZipPath);
-  const archive = archiver('zip', { zlib: { level: 9 } });
+  try {
+    const outputZipPath = path.join(folderPath, `${folderName}.zip`);
+    const output = fs.createWriteStream(outputZipPath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    console.log('♿️ - file: zip.mjs:35 - createZipFile - archive:', archive);
 
-  archive.pipe(output);
+    archive.pipe(output);
+    console.log('♿️ - file: zip.mjs:38 - createZipFile - archive:', archive);
 
-  for (const imageFile of imageFiles) {
-    const imageName = path.basename(imageFile);
-    archive.file(imageFile, { name: imageName });
+    for (const imageFile of imageFiles) {
+      const imageName = path.basename(imageFile);
+      archive.file(imageFile, { name: imageName });
+    }
+
+    await archive.finalize();
+    console.log(`Created ${folderName}.zip in ${folderPath}`);
+  } catch (err) { 
+    console.log(err) 
   }
-
-  await archive.finalize();
-  console.log(`Created ${folderName}.zip in ${folderPath}`);
 }
 
 // 递归处理文件夹及其内容
