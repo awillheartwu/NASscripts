@@ -37,17 +37,24 @@ async function createZipFile(imageFiles, folderPath, folderName) {
 
     for (const imageFile of imageFiles) {
       const imageName = path.basename(imageFile);
-      const a = archive.file(imageFile, { name: imageName });
-      console.log('♿️ - file: zip.mjs:41 - createZipFile - a:', a);
+      archive.file(imageFile, { name: imageName });
     }
-    console.log('start finalize');
-    const a = await archive.finalize();
-    console.log('♿️ - file: zip.mjs:46 - createZipFile - a:', a);
+
+    // 不需要等待 archive.file，直接调用 finalize
+    archive.finalize();
+
+    // 等待 finalize 完成
+    await new Promise((resolve, reject) => {
+      output.on('close', resolve);
+      archive.on('error', reject);
+    });
+
     console.log(`Created ${folderName}.zip in ${folderPath}`);
   } catch (err) {
-    console.log(err)
+    console.error('Error creating zip file:', err);
   }
 }
+
 
 // 递归处理文件夹及其内容
 async function processFolderRecursively(folderPath) {
