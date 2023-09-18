@@ -49,6 +49,7 @@ async function processFolderRecursively(folderPath) {
   // 读取文件夹中的文件和子文件夹
   const files = await readdir(folderPath);
   const imageFiles = [];
+  const notImageFolders = [];
 
   // 遍历文件和子文件夹
   for (const file of files) {
@@ -58,18 +59,19 @@ async function processFolderRecursively(folderPath) {
     if (fileStat.isFile() && isImageFile(filePath)) {
       imageFiles.push(filePath);
     } else if (fileStat.isDirectory()) {
+      notImageFolders.push(folderPath);
       // 如果是文件夹，递归处理该文件夹
       await processFolderRecursively(filePath);
     }
   }
 
   // 判断是否需要创建 zip
-  if (imageFiles.length > 0) {
+  if (imageFiles.length > 0 && !notImageFolders.includes(folderPath)) {
     // 检查上一层目录是否已经有 zip 文件
     const parentFolder = path.dirname(folderPath);
-    const parentFolderName = path.basename(parentFolder);
-    const parentZipExists = fs.existsSync(path.join(parentFolder, `${parentFolderName}.zip`));
-
+    // const parentFolderName = path.basename(parentFolder);
+    const parentZipExists = fs.existsSync(path.join(parentFolder, `${folderName}.zip`));
+    
     if (!parentZipExists) {
       // 如果上一层没有对应的 zip 文件，创建到上层目录下
       await createZipFile(imageFiles, parentFolder, folderName);
