@@ -12,8 +12,10 @@ const year = dayjs(now).format('YYYY');
 const month = dayjs(now).format('MM');
 
 // 定义源目录和目标目录
-const sourceDir = path.join('/mnt/photo/手机相册', year, month);
-const targetDir = path.join('/mnt/photo/截图相册/02_phone', year, month);
+const sourceDirInput = process.argv[2];
+const targetDirInput = process.argv[3];
+const sourceDir = path.join(sourceDirInput ?? '/mnt/photo/手机相册', year, month);
+const targetDir = path.join(targetDirInput ?? '/mnt/photo/截图相册/02_phone', year, month);
 console.log(`Source directory: ${sourceDir}`);
 console.log(`Target directory: ${targetDir}`);
 
