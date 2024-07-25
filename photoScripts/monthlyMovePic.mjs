@@ -1,7 +1,7 @@
-const exifr = require('exifr');
-const fs = require('fs-extra');
-const path = require('path');
-const dayjs = require('dayjs');
+import exifr from 'exifr';
+import fs from 'fs-extra';
+import path from 'path';
+import dayjs from 'dayjs';
 
 // 支持的图片格式列表
 const supportedFormats = new Set(['.jpg', '.jpeg', '.png', '.tiff', '.webp', '.heic', '.gif']);
