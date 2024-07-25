@@ -1,0 +1,83 @@
+const exifr = require('exifr');
+const fs = require('fs-extra');
+const path = require('path');
+const dayjs = require('dayjs');
+
+// 支持的图片格式列表
+const supportedFormats = new Set(['.jpg', '.jpeg', '.png', '.tiff', '.webp', '.heic', '.gif']);
+
+// 获取当前年份和月份
+const now = new Date();
+const year = dayjs(now).format('YYYY');
+const month = dayjs(now).format('MM');
+
+// 定义源目录和目标目录
+const sourceDir = path.join('/mnt/photo/手机相册', year, month);
+const targetDir = path.join('/mnt/photo/截图相册/02_phone', year, month);
+console.log(`Source directory: ${sourceDir}`);
+console.log(`Target directory: ${targetDir}`);
+
+// 创建目标目录（如果不存在）
+fs.ensureDirSync(targetDir);
+
+// 从图片中提取EXIF信息
+async function extractExif(filePath) {
+    try {
+        const exif = await exifr.parse(filePath);
+        return exif;
+    } catch (error) {
+        console.error('Error extracting EXIF data:', error);
+        return null;
+    }
+}
+
+// 迁移文件
+async function moveFile(filePath, targetPath) {
+    try {
+        await fs.move(filePath, targetPath, { overwrite: true });
+        console.log(`Moved ${filePath} to ${targetPath}`);
+    } catch (error) {
+        console.error(`Error moving file ${filePath}:`, error);
+    }
+}
+
+// 递归遍历目录
+async function walkDir(dirPath, callback) {
+    const files = await fs.readdir(dirPath, { withFileTypes: true });
+    for (let file of files) {
+        const fullPath = path.join(dirPath, file.name);
+        if (file.isDirectory()) {
+            await walkDir(fullPath, callback); // 递归遍历子目录
+        } else if (supportedFormats.has(path.extname(file.name).toLowerCase())) {
+            await callback(fullPath); // 执行回调处理文件
+        }
+    }
+}
+
+// 处理图片
+async function processImages(dirPath) {
+    await walkDir(dirPath, async (filePath) => {
+        const ext = path.extname(filePath).toLowerCase();
+        const isGif = ext === '.gif';
+
+        let exif = null;
+        if (!isGif) {
+            exif = await extractExif(filePath);
+        }
+
+        // 判断是否是截屏或网络图片或GIF图片
+        const isScreenshot = exif && exif.userComment && exif.userComment.includes('Screenshot');
+        const isNetworkImage = !exif || (exif && !exif.Make && !exif.Model);
+
+        if (isScreenshot || isNetworkImage || isGif) {
+            const targetPath = path.join(targetDir, path.basename(filePath));
+            await moveFile(filePath, targetPath);
+        }
+    });
+}
+
+// 主函数
+(async () => {
+    await processImages(sourceDir);
+    console.log('Processing completed.');
+})();
