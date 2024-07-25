@@ -6,6 +6,9 @@ import dayjs from 'dayjs';
 // 支持的图片格式列表
 const supportedFormats = new Set(['.jpg', '.jpeg', '.png', '.tiff', '.webp', '.heic', '.gif']);
 
+// 忽略的目录列表
+const ignoredDirectories = new Set(['@eaDir', '#snapshot', '#recycle', '@tmp', '@SynoFinder-log', '@sharesnap']);
+
 // 获取当前年份和月份
 const now = new Date();
 const year = dayjs(now).format('YYYY');
@@ -48,6 +51,12 @@ async function walkDir(dirPath, callback) {
     const files = await fs.readdir(dirPath, { withFileTypes: true });
     for (let file of files) {
         const fullPath = path.join(dirPath, file.name);
+        
+        // 忽略特定目录
+        if (file.isDirectory() && (ignoredDirectories.has(file.name) || file.name.startsWith('@'))) {
+            continue;
+        }
+
         if (file.isDirectory()) {
             await walkDir(fullPath, callback); // 递归遍历子目录
         } else if (supportedFormats.has(path.extname(file.name).toLowerCase())) {
