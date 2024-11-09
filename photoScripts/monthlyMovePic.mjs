@@ -23,6 +23,7 @@ console.log(`Source directory: ${sourceDir}`);
 console.log(`Target directory: ${targetDir}`);
 
 // 创建目标目录（如果不存在）
+fs.ensureDirSync(sourceDir);
 fs.ensureDirSync(targetDir);
 
 // 从图片中提取EXIF信息
@@ -70,17 +71,19 @@ async function processImages(dirPath) {
     await walkDir(dirPath, async (filePath) => {
         const ext = path.extname(filePath).toLowerCase();
         const isGif = ext === '.gif';
+        const isHeic = ext === '.heic';
 
         let exif = null;
         if (!isGif) {
             exif = await extractExif(filePath);
         }
 
-        // 判断是否是截屏或网络图片或GIF图片
+        // 判断是否是截屏或网络图片或GIF图片,或者文件格式是非视频且格式不是heic
         const isScreenshot = exif && exif.userComment && exif.userComment.includes('Screenshot');
         const isNetworkImage = !exif || (exif && !exif.Make && !exif.Model);
+        const isNotHeicAndNotVideo = !isHeic && !(ext === '.mp4' || ext === '.mov');
 
-        if (isScreenshot || isNetworkImage || isGif) {
+        if (isScreenshot || isNetworkImage || isGif || isNotHeicAndNotVideo) {
             const targetPath = path.join(targetDir, path.basename(filePath));
             await moveFile(filePath, targetPath);
         }
